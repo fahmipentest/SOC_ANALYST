@@ -1,84 +1,110 @@
-# WRITE-UP — SSH Brute Force Detection dengan Wazuh SIEM
-**Author:** fahmipentest  
-**Date:** 17 Mei 2026  
-**Lab:** Personal SOC Lab (VirtualBox)  
-**Kategori:** Detection Engineering / Threat Hunting  
+# README.md
+
+<div align="center">
+
+# 🔵 SOC LAB — SSH Brute Force Detection with Wazuh SIEM
+
+<img src="https://img.shields.io/badge/SOC-LAB-0A66C2?style=for-the-badge&logo=probot&logoColor=white">
+<img src="https://img.shields.io/badge/WAZUH-0055FF?style=for-the-badge&logo=elastic&logoColor=white">
+<img src="https://img.shields.io/badge/MITRE-T1110-red?style=for-the-badge">
+<img src="https://img.shields.io/badge/STATUS-COMPLETED-success?style=for-the-badge">
+<img src="https://img.shields.io/badge/BLUE_TEAM-DEFENSE-blue?style=for-the-badge">
+
+<br><br>
+
+<img width="900" src="https://user-images.githubusercontent.com/placeholder/soc-banner.png">
+
+### 🚨 SSH Brute Force Detection • Wazuh SIEM • MITRE ATT&CK • SOC Investigation
+
+</div>
 
 ---
 
-## DESKRIPSI
+## ✨ Project Overview
 
-Write-up ini mendokumentasikan simulasi serangan SSH Brute Force menggunakan **Hydra** dari mesin Kali Linux terhadap endpoint Windows 10, dan proses deteksinya menggunakan **Wazuh SIEM** yang berjalan di Ubuntu Server 22.04.
+Project ini merupakan simulasi serangan **SSH Brute Force** menggunakan Hydra dari mesin Kali Linux terhadap endpoint Windows 10, serta proses deteksi dan investigasinya menggunakan Wazuh SIEM.
 
----
+Repository ini dibuat sebagai:
 
-## ENVIRONMENT LAB
-
-| VM | OS | Role | IP |
-|---|---|---|---|
-| Attacker | Kali Linux | Offensive Machine | 192.168.1.9 |
-| Victim | Windows 10 | Endpoint / Target | 192.168.1.19 |
-| SIEM | Ubuntu 22.04 + Wazuh | Detection / Monitoring | 192.168.1.15 |
-
-**Tools yang digunakan:**
-- Hydra v9.6 — brute force tool
-- Wazuh 4.7 — SIEM & EDR
-- Sysmon — advanced Windows telemetry
-- OpenSSH for Windows — attack surface
+🛡️ SOC Analyst Portfolio  
+🔎 Threat Hunting Practice  
+🚨 Incident Response Simulation  
+📊 Detection Engineering Lab  
+🧠 MITRE ATT&CK Mapping Practice  
+📁 SIEM Investigation Documentation
 
 ---
 
-## ARSITEKTUR SERANGAN
+# SOC LAB — SSH Brute Force Detection with Wazuh SIEM
 
-```
-[Kali Linux 192.168.1.9]
+![SOC](https://img.shields.io/badge/SOC-Lab-blue)
+![Wazuh](https://img.shields.io/badge/Wazuh-4.7-green)
+![MITRE](https://img.shields.io/badge/MITRE-T1110-red)
+![Status](https://img.shields.io/badge/Status-Completed-success)
+
+## Overview
+
+Project ini merupakan simulasi serangan **SSH Brute Force** menggunakan Hydra dari mesin Kali Linux terhadap endpoint Windows 10, serta proses deteksi dan investigasinya menggunakan Wazuh SIEM.
+
+Lab ini dibuat untuk pembelajaran:
+
+- SOC Analyst L1
+- Threat Hunting
+- Incident Response
+- Detection Engineering
+- MITRE ATT&CK Mapping
+- Log Analysis
+
+---
+
+## 🖥️ Lab Architecture
+
+```text
+[Kali Linux]
+192.168.1.9
+(Attacker)
         │
         │ SSH Brute Force (Hydra)
-        │ Port 22
         ▼
-[Windows 10 192.168.1.19]
-        │ OpenSSH installed
-        │ Wazuh Agent aktif
+[Windows 10]
+192.168.1.19
+(Victim)
         │
-        │ Forward logs (port 1514)
+        │ Wazuh Agent + Sysmon
         ▼
-[Ubuntu + Wazuh 192.168.1.15]
-        │
-        ▼
-   ALERT TRIGGERED
-   Rule 5712 — Level 10
-   MITRE T1110 — Brute Force
+[Ubuntu Server + Wazuh]
+192.168.1.15
+(SIEM / Detection)
 ```
 
 ---
 
-## FASE 1 — PERSIAPAN TARGET (Windows 10)
+## ⚙️ Lab Environment
 
-### Install OpenSSH Server
-```cmd
-powershell Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
-net start sshd
-sc config sshd start=auto
-netsh advfirewall firewall add rule name="SSH" dir=in action=allow protocol=TCP localport=22
-```
-
-### Buat User Target
-```cmd
-net user testuser Password123 /add
-net localgroup "Remote Desktop Users" testuser /add
-```
-
-### Aktifkan Audit Policy
-```cmd
-auditpol /set /subcategory:"Logon" /success:enable /failure:enable
-auditpol /set /subcategory:"Account Lockout" /success:enable /failure:enable
-```
+| Machine | OS | Role | IP Address |
+|---|---|---|---|
+| Kali Linux | Kali Linux 2024 | Attacker | 192.168.1.9 |
+| Windows 10 | Windows 10 Pro | Victim | 192.168.1.19 |
+| Ubuntu Server | Ubuntu 22.04 + Wazuh | SIEM | 192.168.1.15 |
 
 ---
 
-## FASE 2 — EKSEKUSI SERANGAN (Kali Linux)
+## 🧰 Tools Used
 
-### Buat Wordlist
+| Tool | Function |
+|---|---|
+| Hydra v9.6 | SSH Brute Force |
+| Wazuh 4.7 | SIEM & Detection |
+| Sysmon | Windows Telemetry |
+| OpenSSH | Attack Surface |
+| VirtualBox | Virtual Lab |
+
+---
+
+# ⚔️ Attack Simulation
+
+## 📄 Create Wordlist
+
 ```bash
 cat > /tmp/passwords.txt << EOF
 password
@@ -95,110 +121,273 @@ abc123
 EOF
 ```
 
-### Jalankan Hydra
+---
+
+## 🚀 Execute Hydra Attack
+
 ```bash
 hydra -l testuser -P /tmp/passwords.txt ssh://192.168.1.19 -V -t 4
 ```
 
-### Output Hydra
-```
-Hydra v9.6 starting at 2026-05-17 01:45:00
-[DATA] attacking ssh://192.168.1.19:22/
-[ATTEMPT] target 192.168.1.19 - login "testuser" - pass "password"
-[ATTEMPT] target 192.168.1.19 - login "testuser" - pass "123456"
-[ATTEMPT] target 192.168.1.19 - login "testuser" - pass "admin"
-...
-```
-
 ---
 
-## FASE 3 — DETEKSI DI WAZUH
+# 🚨 Detection in Wazuh
 
-### Alert yang Ter-trigger
+## 🔥 Rule 5712 — SSH Brute Force
 
-**Rule 5712 — SSH Brute Force**
-```
-Timestamp   : May 17, 2026 @ 01:45:10
-Agent       : WAZUH
-Description : sshd: brute force trying to get access to the system
-Level       : 10 (HIGH)
-Rule ID     : 5712
-Source IP   : 192.168.1.9 (Kali Linux)
-MITRE ID    : T1110
-MITRE Tactic: Credential Access
-MITRE Tech  : Brute Force
-```
-
-**Rule 60115 — Account Lockout**
-```
-Timestamp   : May 17, 2026 @ 01:36:34
-Agent       : Win10
-Description : User account locked out (multiple login errors)
-Level       : 9 (HIGH)
-Rule ID     : 60115
-```
-
-### Statistik Deteksi (24 jam)
-```
-Total Events            : 1,511
-Level 12+ Alerts        : 62
-Authentication Failures : 85
-Authentication Success  : 16
-Password Guessing (MITRE): 31
-SSH Attacks             : 26
-```
-
----
-
-## FASE 4 — ANALISA
-
-### Timeline Serangan
-```
-01:25:26 — Hydra dimulai dari Kali (192.168.1.9)
-01:36:34 — Account testuser terkunci (Rule 60115)
-01:45:10 — Wazuh trigger Rule 5712 (Brute Force confirmed)
-01:45:xx — Alert masuk ke dashboard Wazuh
-```
-
-### MITRE ATT&CK Mapping
-| Tactic | Technique | ID | Deteksi |
-|---|---|---|---|
-| Credential Access | Brute Force | T1110 | ✅ Rule 5712 |
-| Credential Access | Password Guessing | T1110.001 | ✅ 31 events |
-| Lateral Movement | SSH | T1021.004 | ✅ 26 events |
-
----
-
-## KESIMPULAN
-
-1. **Serangan berhasil disimulasikan** — Hydra berhasil mengirim multiple failed authentication ke Windows 10 via SSH
-2. **Wazuh berhasil mendeteksi** — Rule 5712 ter-trigger dengan level 10 (HIGH) dalam hitungan menit
-3. **Account Lockout berjalan** — Windows mengunci akun testuser secara otomatis (Rule 60115)
-4. **MITRE mapping otomatis** — Wazuh memetakan ke T1110 Brute Force tanpa konfigurasi tambahan
-5. **Source IP teridentifikasi** — IP Kali (192.168.1.9) tercatat di alert, memudahkan investigasi
-
----
-
-## LESSON LEARNED
-
-| Aspek | Temuan |
+| Field | Value |
 |---|---|
-| Detection Time | Dalam ~20 menit serangan terdeteksi |
-| False Positive | Minimal — rule brute force cukup akurat |
-| Visibility | Source IP, target user, timestamp semua tercatat |
-| MITRE Coverage | Otomatis mapped ke T1110 |
+| Rule ID | 5712 |
+| Severity | 10 (HIGH) |
+| MITRE | T1110 |
+| Tactic | Credential Access |
+| Technique | Brute Force |
+| Source IP | 192.168.1.9 |
+| Target User | testuser |
 
 ---
 
-## REKOMENDASI MITIGASI
+## 📌 Additional Detection
 
-1. **Ganti port SSH** dari 22 ke port non-standard
-2. **Gunakan SSH Key** bukan password authentication
-3. **Aktifkan fail2ban** untuk auto-block IP setelah N failed attempts
-4. **Batasi IP** yang boleh akses SSH via firewall rule
-5. **Set account lockout policy** di Windows (maksimal 5 attempt)
-6. **Monitor alert level 10+** secara realtime di Wazuh
+| Rule ID | Description |
+|---|---|
+| 5710 | SSH authentication failed |
+| 5712 | SSH brute force detected |
+| 60115 | Account locked out |
 
 ---
 
-*Write-up ini dibuat untuk keperluan edukasi dan dokumentasi SOC Lab pribadi.*
+# 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Credential Access | Brute Force | T1110 |
+| Credential Access | Password Guessing | T1110.001 |
+| Lateral Movement | Remote Services SSH | T1021.004 |
+
+---
+
+# ⏱️ Incident Timeline
+
+| Timestamp | Event |
+|---|---|
+| 01:25 | Hydra attack started |
+| 01:36 | Account locked out |
+| 01:45 | Wazuh Rule 5712 triggered |
+| 02:20 | Investigation started |
+| 02:25 | Attacker IP blocked |
+| 02:30 | Incident resolved |
+
+---
+
+# 🕵️ Investigation Steps
+
+## 🔍 Identify Attacker IP
+
+```bash
+sudo grep "Failed password" /var/log/auth.log
+```
+
+---
+
+## ✅ Check Successful Login
+
+```bash
+sudo grep "Accepted" /var/log/auth.log
+```
+
+---
+
+## ⛔ Block Attacker IP
+
+### Linux
+
+```bash
+sudo iptables -A INPUT -s 192.168.1.9 -j DROP
+```
+
+### Windows
+
+```cmd
+netsh advfirewall firewall add rule name="BLOCK-BRUTE" dir=in action=block remoteip=192.168.1.9
+```
+
+---
+
+# 📊 Detection Statistics
+
+```text
+Total Events            : 1,511
+Authentication Failures : 85
+High Severity Alerts    : 62
+Authentication Success  : 16
+```
+
+---
+
+# 📚 Lessons Learned
+
+- Wazuh berhasil mendeteksi brute force dengan cepat
+- Rule 5712 cukup akurat untuk credential attack
+- Windows Account Lockout membantu mitigasi serangan
+- MITRE ATT&CK mapping otomatis mempermudah analisa
+- Source IP attacker dapat diidentifikasi dengan jelas
+
+---
+
+# 🛡️ Recommendations
+
+- Gunakan SSH Key Authentication
+- Disable Password Authentication
+- Implementasikan Fail2Ban
+- Gunakan MFA untuk remote access
+- Ganti default SSH Port
+- Aktifkan Wazuh Active Response
+
+---
+
+# 📁 Repository Structure
+
+```text
+soc-lab-bruteforce/
+│
+├── README.md
+├── cheatsheet/
+│   └── cheatsheet_bruteforce.md
+│
+├── writeup/
+│   └── writeup_bruteforce.md
+│
+├── reports/
+│   └── Incident_Report_Bruteforce_INC-2026-0517-001.docx
+│
+├── screenshots/
+│   ├── hydra-attack.png
+│   ├── wazuh-alert-5712.png
+│   ├── account-lockout.png
+│   └── wazuh-dashboard.png
+│
+└── configs/
+    ├── ossec.conf
+    └── fail2ban-jail.local
+```
+
+---
+
+# 🖼️ Suggested Screenshots
+
+Tambahkan screenshot berikut agar repository lebih profesional:
+
+- Hydra brute force terminal
+- Alert Rule 5712 di Wazuh
+- Event detail Wazuh
+- Windows account lockout
+- Dashboard Wazuh
+- Topology lab
+
+---
+
+# 👨‍💻 About Me
+
+## fahmipentest
+
+SOC Analyst | Penetration Tester | Cybersecurity Enthusiast
+
+Fokus pada:
+
+- SOC Analyst
+- Detection Engineering
+- Threat Hunting
+- SIEM
+- Pentesting Lab
+- Wazuh SIEM
+
+---
+
+# ⚠️ Disclaimer
+
+Project ini dibuat hanya untuk:
+
+- Edukasi
+- Research
+- Personal SOC Lab
+- Legal Testing Environment
+
+Jangan gunakan teknik pada repository ini terhadap sistem tanpa izin.
+
+---
+
+# 📜 LICENSE
+
+MIT License
+
+Copyright (c) 2026 fahmipentest
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files.
+
+---
+
+# .gitignore
+
+```gitignore
+*.log
+*.tmp
+*.pcap
+*.evtx
+*.iso
+.env
+```
+
+---
+
+# 💡 Suggested Github Repository Name
+
+```text
+soc-lab-bruteforce-wazuh
+```
+
+Alternatif:
+
+```text
+wazuh-bruteforce-detection-lab
+soc-lab-ssh-bruteforce
+wazuh-siem-bruteforce-project
+```
+
+---
+
+# 📝 Suggested Github Description
+
+```text
+SOC Lab project simulating SSH Brute Force attacks using Hydra and detecting them with Wazuh SIEM mapped to MITRE ATT&CK T1110.
+```
+
+---
+
+# 🏷️ Suggested Topics / Tags
+
+```text
+soc
+soc-lab
+wazuh
+siem
+hydra
+bruteforce
+threat-hunting
+incident-response
+windows
+linux
+mitre-attck
+blue-team
+cybersecurity
+```
+
+---
+
+# ✅ Suggested Commit Message
+
+```text
+Initial commit - SOC Lab SSH Brute Force Detection with Wazuh SIEM
+```
+
