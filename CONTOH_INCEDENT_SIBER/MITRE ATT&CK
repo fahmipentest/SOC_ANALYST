@@ -1,0 +1,560 @@
+# 🔥 MITRE ATT&CK Mapping & Cyber Attack Fundamentals
+https://attack.mitre.org/
+
+<div align="center">
+
+![Cybersecurity](https://img.shields.io/badge/Cybersecurity-SOC%20Lab-blue?style=for-the-badge)
+![MITRE](https://img.shields.io/badge/MITRE-ATT%26CK-red?style=for-the-badge)
+![Wazuh](https://img.shields.io/badge/Wazuh-SIEM-green?style=for-the-badge)
+![Sysmon](https://img.shields.io/badge/Sysmon-Windows%20Telemetry-orange?style=for-the-badge)
+
+</div>
+
+---
+
+# 📖 Overview
+
+Dokumen ini berisi:
+
+✅ Penjelasan lengkap tentang MITRE ATT&CK  
+✅ Tahapan serangan siber  
+✅ Cara identifikasi serangan  
+✅ Detection menggunakan Sysmon & Wazuh  
+✅ Event ID penting Windows  
+✅ Mitigasi & perbaikan  
+✅ Workflow SOC Analyst  
+
+---
+
+# 🧠 Apa Itu MITRE ATT&CK?
+
+> MITRE ATT&CK adalah framework yang memetakan perilaku attacker berdasarkan teknik serangan nyata yang digunakan di dunia cybersecurity.
+
+Framework ini digunakan oleh:
+
+- SOC Analyst
+- Blue Team
+- Threat Hunter
+- Incident Responder
+- Red Team
+- Malware Analyst
+
+Tujuannya:
+
+- memahami pola serangan
+- membuat detection
+- investigasi incident
+- threat hunting
+- incident response
+
+---
+
+# 🏗 Struktur MITRE ATT&CK
+
+| Komponen | Penjelasan |
+|---|---|
+| Tactic | Tujuan attacker |
+| Technique | Cara attacker |
+| Sub-technique | Detail teknik |
+| Procedure | Implementasi nyata |
+
+---
+
+# ⚔️ CYBER ATTACK LIFECYCLE
+
+---
+
+# 🔍 1. RECONNAISSANCE
+
+## 🎯 Tujuan
+Mengumpulkan informasi target.
+
+## 🛠 Tools
+
+- Nmap
+- Whois
+- Google Dork
+- Maltego
+
+## 🧪 Aktivitas
+
+```bash
+nmap -sV 192.168.1.10
+```
+
+## 🚨 Detection
+
+- scanning berlebihan
+- request aneh
+- port enumeration
+
+## 🛡 Mitigasi
+
+- firewall
+- rate limiting
+- WAF
+- hide service banner
+
+---
+
+# 🚪 2. INITIAL ACCESS
+
+## 🎯 Tujuan
+Mendapatkan akses pertama ke sistem.
+
+---
+
+## 🎣 PHISHING
+
+### 🧪 Contoh
+- email palsu
+- login page fake
+- malicious attachment
+
+### 🚨 Identifikasi
+
+- domain typo
+- attachment aneh
+- PowerShell dari Outlook
+
+### 🛡 Mitigasi
+
+- MFA
+- email filtering
+- awareness training
+
+---
+
+## 🔓 BRUTE FORCE
+
+### 🧪 Contoh
+
+```bash
+hydra -l administrator -P rockyou.txt rdp://192.168.1.5
+```
+
+### 🚨 Detection
+
+Windows Event ID:
+
+```text
+4625 = Failed Login
+```
+
+### 🔎 Wazuh Query
+
+```kql
+event.code:4625
+```
+
+### 🛡 Mitigasi
+
+- MFA
+- account lockout
+- password policy
+- geo blocking
+
+---
+
+# 💻 3. EXECUTION
+
+## 🎯 Tujuan
+Menjalankan command atau malware.
+
+---
+
+## ⚡ PowerShell
+
+### 🧪 Contoh
+
+```powershell
+powershell.exe -enc SQBFAFgA
+```
+
+### 🚨 Detection
+
+Sysmon Event ID:
+
+```text
+1 = Process Creation
+```
+
+### 🔎 Query
+
+```kql
+powershell.exe
+```
+
+### 🛡 Mitigasi
+
+- AppLocker
+- restrict PowerShell
+- Constrained Language Mode
+
+---
+
+## 🦠 Malware Execution
+
+### 🚨 Identifikasi
+
+- unsigned binary
+- suspicious hash
+- unexpected process
+
+### 🛡 Mitigasi
+
+- antivirus
+- EDR
+- application control
+
+---
+
+# 🔄 4. PERSISTENCE
+
+## 🎯 Tujuan
+Bertahan di sistem setelah reboot.
+
+## 🧪 Contoh
+
+- Registry Run Key
+- Scheduled Task
+- Startup Folder
+- Windows Service
+
+### 🚨 Detection
+
+Sysmon Event ID:
+
+```text
+13 = Registry Modification
+```
+
+### 🛡 Mitigasi
+
+- monitor registry
+- monitor startup changes
+- least privilege
+
+---
+
+# ⬆️ 5. PRIVILEGE ESCALATION
+
+## 🎯 Tujuan
+Menjadi Administrator/SYSTEM.
+
+## 🚨 Identifikasi
+
+- user tiba-tiba menjadi admin
+- high integrity process
+
+## 🛡 Mitigasi
+
+- patching
+- least privilege
+- disable unnecessary privilege
+
+---
+
+# 🥷 6. DEFENSE EVASION
+
+## 🎯 Tujuan
+Menghindari detection.
+
+## 🧪 Contoh
+
+- log clearing
+- obfuscation
+- disable antivirus
+- rename malware
+
+## 🚨 Detection
+
+```text
+1102 = Audit Log Cleared
+```
+
+## 🛡 Mitigasi
+
+- centralized logging
+- tamper protection
+- immutable logs
+
+---
+
+# 🔑 7. CREDENTIAL ACCESS
+
+## 🎯 Tujuan
+Mencuri credential.
+
+## 🧪 Contoh
+
+- Mimikatz
+- LSASS dumping
+- brute force
+
+## 🚨 Detection
+
+Sysmon Event ID:
+
+```text
+10 = Process Access
+```
+
+## 🛡 Mitigasi
+
+- Credential Guard
+- disable WDigest
+- EDR
+
+---
+
+# 🛰 8. DISCOVERY
+
+## 🎯 Tujuan
+Memahami environment internal.
+
+## 🧪 Command Umum
+
+```cmd
+whoami
+ipconfig
+hostname
+net user
+```
+
+## 🚨 Detection
+
+- enumeration command
+- unusual admin activity
+
+---
+
+# 🌐 9. LATERAL MOVEMENT
+
+## 🎯 Tujuan
+Berpindah antar host.
+
+## 🧪 Contoh
+
+- SMB
+- RDP
+- PsExec
+- WinRM
+
+## 🚨 Detection
+
+- remote login
+- admin share access
+- remote process execution
+
+---
+
+# 📦 10. COLLECTION
+
+## 🎯 Tujuan
+Mengumpulkan data target.
+
+## 🚨 Detection
+
+- suspicious ZIP
+- archive besar
+- screenshot activity
+
+---
+
+# 📡 11. COMMAND & CONTROL
+
+## 🎯 Tujuan
+Komunikasi dengan server attacker.
+
+## 🧪 Contoh
+
+- beaconing
+- reverse shell
+- HTTP callback
+
+## 🚨 Detection
+
+- periodic traffic
+- unknown domain
+- suspicious outbound connection
+
+---
+
+# 🚚 12. EXFILTRATION
+
+## 🎯 Tujuan
+Mengirim data keluar.
+
+## 🚨 Detection
+
+- upload besar
+- unusual outbound traffic
+
+## 🛡 Mitigasi
+
+- DLP
+- outbound filtering
+- proxy monitoring
+
+---
+
+# 💥 13. IMPACT
+
+## 🎯 Tujuan
+Merusak sistem.
+
+## 🧪 Contoh
+
+- ransomware
+- data destruction
+- service stop
+
+## 🚨 Detection
+
+- file extension berubah
+- shadow copy deleted
+- encryption activity
+
+---
+
+# 📊 WINDOWS EVENT ID PENTING
+
+| Event ID | Fungsi |
+|---|---|
+| 4624 | Successful Login |
+| 4625 | Failed Login |
+| 4688 | Process Creation |
+| 1102 | Audit Log Cleared |
+
+---
+
+# 🖥 SYSMON EVENT ID PENTING
+
+| Event ID | Fungsi |
+|---|---|
+| 1 | Process Creation |
+| 3 | Network Connection |
+| 7 | Image Loaded |
+| 10 | Process Access |
+| 11 | File Create |
+| 13 | Registry Modification |
+
+---
+
+# 🧭 ALUR ANALISA SOC
+
+```text
+Alert Muncul
+↓
+Validasi
+↓
+Investigasi
+↓
+MITRE Mapping
+↓
+Triage
+↓
+Response
+↓
+Documentation
+```
+
+---
+
+# 🛡 MITIGASI & DEFENSE
+
+## ✅ Hardening
+
+- patching
+- least privilege
+- disable unused service
+- MFA
+
+---
+
+## ✅ Monitoring
+
+- Wazuh
+- Sysmon
+- SIEM
+- EDR
+
+---
+
+## ✅ Detection Engineering
+
+Contoh detection:
+
+```kql
+powershell.exe AND event.code:1
+```
+
+---
+
+## ✅ Incident Response
+
+- isolate host
+- block IP
+- disable account
+- kill process
+
+---
+
+# 🧪 CONTOH MITRE MAPPING
+
+| Aktivitas | Technique | ID |
+|---|---|---|
+| Brute Force | Brute Force | T1110 |
+| PowerShell | PowerShell | T1059.001 |
+| Credential Dumping | OS Credential Dumping | T1003 |
+| Remote Login | Remote Services | T1021 |
+
+---
+
+# 🚀 SKILL YANG HARUS DIPELAJARI
+
+| Skill | Level Penting |
+|---|---|
+| Windows Internals | ⭐⭐⭐⭐⭐ |
+| Networking | ⭐⭐⭐⭐⭐ |
+| Log Analysis | ⭐⭐⭐⭐⭐ |
+| Threat Hunting | ⭐⭐⭐⭐ |
+| Malware Analysis | ⭐⭐⭐ |
+
+---
+
+# 🏁 KESIMPULAN
+
+MITRE ATT&CK membantu SOC memahami:
+
+- bagaimana attacker bekerja
+- bagaimana mendeteksi serangan
+- bagaimana melakukan investigasi
+- bagaimana melakukan mitigasi
+
+Dengan:
+
+- Wazuh
+- Sysmon
+- Windows Event Log
+- Threat Hunting
+
+Anda sudah bisa membangun:
+
+✅ SOC Lab realistis  
+✅ Detection Engineering  
+✅ Threat Hunting Workflow  
+✅ Incident Investigation  
+✅ Portfolio SOC Analyst  
+
+---
+
+<div align="center">
+
+# 🔥 Built for SOC Analyst Learning 🔥
+
+Made with ❤️ for Blue Team & Threat Hunting
+
+</div>
+
